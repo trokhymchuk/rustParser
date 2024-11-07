@@ -1,0 +1,24 @@
+vc_calendar = { "BEGIN:VCALENDAR" ~ version ~ prodid ~ event ~ "END:VCALENDAR" }
+version     = { "VERSION:" ~ float }
+prodid      = { "PRODID:" ~ line }
+event       = { "BEGIN:VEVENT" ~ uid ~ organizer ~ dtstart ~ dtend ~ summary ~ "END:VEVENT" }
+uid         = { "UID:" ~ email_address }
+organizer   = { "ORGANIZER;" ~ "CN=" ~ identifier ~ ":" ~ "MAILTO:" ~ email_address }
+dtstart     = { "DTSTART:" ~ datetime }
+dtend       = { "DTEND:" ~ datetime }
+summary     = { "SUMMARY:" ~ line }
+geo         = { float ~ semicolon ~ float }
+
+email_address      = @{ (letter_or_digit | "." | "_")+ ~ "@" ~ letter_or_digit+ ~ "." ~ letter_or_digit+ }
+datetime           = @{ digit{8} ~ "T" ~ digit{6} ~ "Z" }
+identifier         = @{ letter_or_digit+ ~ (" " ~ letter_or_digit+)* }
+float              = @{ digit+ ~ "." ~ digit+ }
+quoted_string      = @{ "\"" ~ (printable_char ~ ANY)* ~ "\"" }
+ascii_alphanumeric = @{ ASCII_ALPHANUMERIC }
+printable_char     = @{ '\u{20}'..'\u{21}' | '\u{23}'..'\u{5B}' | '\u{5D}'..'\u{7A}' }
+digit              = @{ '0'..'9' }
+letter_or_digit    = @{ 'a'..'z' | 'A'..'Z' | '0'..'9' }
+comment            =  { ";" ~ (ANY ~ "\n")* }
+WHITESPACE         = _{ comment | " " | "\t" | "\n" }
+line               = @{ (letter_or_digit | " " | "-" | "/" | "." )* }
+semicolon          = { ";" }

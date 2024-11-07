@@ -2,7 +2,7 @@
 name = "iCalendar_parser"
 version = "0.1.0"
 edition = "2021"
-description = "iCalendar fiel parser"
+description = "iCalendar file parser"
 repository = "https://github.com/trokhymchuk/rustParser"
 readme = "README.md"
 

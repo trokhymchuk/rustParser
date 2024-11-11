@@ -1,24 +1,130 @@
-vc_calendar = { "BEGIN:VCALENDAR" ~ version ~ prodid ~ event ~ "END:VCALENDAR" }
-version     = { "VERSION:" ~ float }
-prodid      = { "PRODID:" ~ line }
-event       = { "BEGIN:VEVENT" ~ uid ~ organizer ~ dtstart ~ dtend ~ summary ~ "END:VEVENT" }
-uid         = { "UID:" ~ email_address }
-organizer   = { "ORGANIZER;" ~ "CN=" ~ identifier ~ ":" ~ "MAILTO:" ~ email_address }
-dtstart     = { "DTSTART:" ~ datetime }
-dtend       = { "DTEND:" ~ datetime }
-summary     = { "SUMMARY:" ~ line }
-geo         = { float ~ semicolon ~ float }
+/// The root rule that matches the entire iCalendar file.
+///
+/// This rule matches the "BEGIN:VCALENDAR" and "END:VCALENDAR" markers, optionally matches the
+/// "METHOD" field, and includes the version, prodid, and a sequence of events.
+vc_calendar = { 
+    "BEGIN:VCALENDAR" ~ method? ~ ((version  ~ prodid) | (prodid ~ version)) ~ event* ~ "END:VCALENDAR" 
+}
 
-email_address      = @{ (letter_or_digit | "." | "_")+ ~ "@" ~ letter_or_digit+ ~ "." ~ letter_or_digit+ }
-datetime           = @{ digit{8} ~ "T" ~ digit{6} ~ "Z" }
-identifier         = @{ letter_or_digit+ ~ (" " ~ letter_or_digit+)* }
-float              = @{ digit+ ~ "." ~ digit+ }
-quoted_string      = @{ "\"" ~ (printable_char ~ ANY)* ~ "\"" }
+/// Matches the "VERSION" field in the iCalendar format.
+///
+/// The version must be followed by a floating-point number (e.g., `2.0`).
+version = { "VERSION:" ~ float }
+
+/// Matches the "PRODID" field in the iCalendar format.
+///
+/// The PRODID field contains the identifier of the software that generated the calendar.
+prodid = { "PRODID:" ~ line }
+
+/// Matches an individual "VEVENT" event in the iCalendar format.
+///
+/// An event is wrapped with "BEGIN:VEVENT" and "END:VEVENT" markers and includes a UID, organizer,
+/// start and end datetime, summary, geographical location, and optionally a description.
+event = { 
+    "BEGIN:VEVENT" ~ uid ~ organizer ~ dtstart ~ dtend ~ summary ~ geo ~ dsc? ~ "END:VEVENT" 
+}
+
+/// Matches the "UID" field in an event.
+///
+/// The UID is a unique identifier for the event, usually in the form of an email address.
+uid = { "UID:" ~ email_address }
+
+/// Matches the "ORGANIZER" field in an event.
+///
+/// The organizer is specified with a CN (common name) and an email address.
+organizer = { 
+    "ORGANIZER;" ~ "CN=" ~ identifier ~ ":" ~ "MAILTO:" ~ email_address 
+}
+
+/// Matches the "DTSTART" field in an event.
+///
+/// The "DTSTART" field specifies the start date and time of the event.
+dtstart = { "DTSTART:" ~ datetime }
+
+/// Matches the "DTEND" field in an event.
+///
+/// The "DTEND" field specifies the end date and time of the event.
+dtend = { "DTEND:" ~ datetime }
+
+/// Optionally matches the "DESCRIPTION" field in an event.
+///
+/// The "DESCRIPTION" field contains a detailed description of the event.
+dsc = { "DESCRIPTION:" ~ line }
+
+/// Matches the "SUMMARY" field in an event.
+///
+/// The "SUMMARY" field contains a brief title or summary of the event.
+summary = { "SUMMARY:" ~ line }
+
+/// Matches the "GEO" field in an event.
+///
+/// The "GEO" field contains the geographical coordinates of the event location in the form of
+/// latitude and longitude.
+geo = { "GEO:" ~ float ~ "," ~ float }
+
+/// Optionally matches the "METHOD" field in the iCalendar file.
+///
+/// The "METHOD" field specifies the method of the calendar, such as "PUBLISH" or "REQUEST".
+method = @{ "METHOD:" ~ ("PUBLISH" | "REQUEST") }
+
+/// Matches an email address in the format `localpart@domain`.
+///
+/// The email address is constructed of letters, digits, and special characters like `.`, `_`.
+email_address = @{ 
+    (letter_or_digit | "." | "_")+ ~ "@" ~ letter_or_digit+ ~ "." ~ letter_or_digit+ 
+}
+
+/// Matches a datetime string in the format `YYYYMMDDTHHMMSSZ` (UTC time).
+///
+/// The datetime is represented with 8 digits for the date and 6 digits for the time, followed by a "Z" for UTC.
+datetime = @{ digit{8} ~ "T" ~ digit{6} ~ "Z" }
+
+/// Matches an identifier, which consists of one or more letters or digits.
+///
+/// An identifier can contain spaces between alphanumeric words.
+identifier = @{ letter_or_digit+ ~ (" " ~ letter_or_digit+)* }
+
+/// Matches a floating-point number.
+///
+/// A float consists of one or more digits, followed by a dot and more digits (e.g., `12.34`).
+float = @{ digit+ ~ "." ~ digit+ }
+
+/// Matches a quoted string in the format `"text"`.
+///
+/// The string may contain any printable character.
+quoted_string = @{ "\"" ~ (printable_char ~ ANY)* ~ "\"" }
+
+/// Matches any alphanumeric character (letters or digits).
+///
+/// This is used for simple alphanumeric matching in identifiers and other fields.
 ascii_alphanumeric = @{ ASCII_ALPHANUMERIC }
-printable_char     = @{ '\u{20}'..'\u{21}' | '\u{23}'..'\u{5B}' | '\u{5D}'..'\u{7A}' }
-digit              = @{ '0'..'9' }
-letter_or_digit    = @{ 'a'..'z' | 'A'..'Z' | '0'..'9' }
-comment            =  { ";" ~ (ANY ~ "\n")* }
-WHITESPACE         = _{ comment | " " | "\t" | "\n" }
-line               = @{ (letter_or_digit | " " | "-" | "/" | "." )* }
-semicolon          = { ";" }
+
+/// Matches any printable character except control characters.
+///
+/// This includes characters with Unicode values between U+0020 (space) and U+007A (tilde ~).
+printable_char = @{ 
+    '\u{20}'..'\u{21}' | '\u{23}'..'\u{5B}' | '\u{5D}'..'\u{7A}' 
+}
+
+/// Matches a digit (0-9).
+digit = @{ '0'..'9' }
+
+/// Matches any letter (a-z, A-Z) or digit (0-9).
+letter_or_digit = @{ 'a'..'z' | 'A'..'Z' | '0'..'9' }
+
+/// Matches a comment, which starts with a semicolon and continues until the end of the line.
+///
+/// This rule allows for inline comments in the calendar file.
+comment =  { ";" ~ (ANY ~ "\n")* }
+
+/// Matches any whitespace character, including spaces, tabs, newlines, and comments.
+///
+/// This rule is used to ignore irrelevant whitespace between fields.
+WHITESPACE = _{ comment | " " | "\t" | "\n" }
+
+/// Matches a line of text, which can contain letters, digits, spaces, and certain punctuation characters.
+///
+/// This rule is used to match free-form text like descriptions, summaries, and lines in the calendar file.
+line = @{ 
+    (letter_or_digit | " " | "-" | "/" | "." | "," | ":")* 
+}

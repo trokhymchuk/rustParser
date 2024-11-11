@@ -1,22 +1,41 @@
-use pest_derive:: Parser;
-use pest:: Parser;
+#![allow(non_snake_case)]
+use anyhow::{self, Context};
+use clap::{Arg, Command};
+use iCalendar_parser::*;
+use std::fs;
 
-#[derive(Parser)]
-#[grammar = "./grammar.pest"]
-pub struct Grammar;
+fn main() -> anyhow::Result<()> {
+    let matches = Command::new("iCal Parser")
+        .version("0.0.1")
+        .author("Artem Trokhymchuk")
+        .about("Parse and display iCalendar files")
+        .arg(
+            Arg::new("file")
+                .short('f')
+                .long("file")
+                .value_name("FILE")
+                .help("Path to the iCalendar file to parse")
+                .value_parser(clap::value_parser!(String))
+                .required(true),
+        )
+        .arg(
+            Arg::new("no-color")
+                .long("no-color")
+                .help("Disables colored output")
+                .value_parser(clap::value_parser!(bool)),
+        )
+        .get_matches();
 
-fn main() {
-    let icalendar_example =
-"BEGIN:VCALENDAR
-VERSION:2.0
-PRODID:-//hacksw/handcal//NONSGML v1.0//EN
-BEGIN:VEVENT
-UID:uid1@example.com
-ORGANIZER;CN=John Doe:MAILTO:john.doe@example.com
-DTSTART:19970714T170000Z
-DTEND:19970715T040000Z
-SUMMARY:Bastille Day Party
-END:VEVENT
-END:VCALENDAR";
-    println!("{:?}", Grammar::parse(Rule::vc_calendar, icalendar_example));
+    let file_path = matches
+        .get_one::<String>("file")
+        .context("File path is required")?;
+
+    let ical_text = fs::read_to_string(file_path)
+        .with_context(|| format!("Failed to read file: {}", file_path))?;
+
+    let calendar = ICalendar::parse(&ical_text).context("Failed to parse iCalendar content")?;
+    let colored = !matches.contains_id("no-color");
+
+    calendar.pretty_print(Some(colored));
+    Ok(())
 }

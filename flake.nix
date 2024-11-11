@@ -15,6 +15,7 @@
               rust-analyzer
               cargo-watch
               clippy
+              rustfmt
             ];
             shellHook = ''
             '';

@@ -1,4 +1,4 @@
-all: build test run_example
+all: format lint build test run_example
 
 build:
 	cargo b
@@ -11,5 +11,10 @@ clean:
 
 run_example:
 	cargo r --  --file tests/iCals/1.ical
+format:
+	cargo fmt
 
-.PHONY: build, clean, run_example, all
+lint:
+	cargo clippy
+
+.PHONY: format, lint, build, clean, run_example, all

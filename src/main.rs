@@ -6,7 +6,7 @@ use std::fs;
 
 fn main() -> anyhow::Result<()> {
     let matches = Command::new("iCal Parser")
-        .version("0.0.1")
+        .version("0.1.3")
         .author("Artem Trokhymchuk")
         .about("Parse and display iCalendar files")
         .arg(

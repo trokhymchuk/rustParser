@@ -7,7 +7,7 @@ The iCalendar file contains event with useful information such as begin/end date
 
 The parser is inteneded to take that file and parse it into a Rust struct for easier manipulation of the data. The result of the parsed file would be used to determine in which day a particular person have the most events.
 
-*See [ASCIINEMA](https://asciinema.org/a/ktJ8678THq7luDBPz8kG32BTf) of the parser!
+*See [ASCIINEMA](https://asciinema.org/a/ktJ8678THq7luDBPz8kG32BTf) of the parser!*
 
 ## Field Description
 

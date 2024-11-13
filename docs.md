@@ -2,7 +2,7 @@
 
 The simple `iCalendar` file parser, that takes textual input and returns it in human-readable format. Also it provide handy api to parse `iCalendar` file and put it into a structure for easier manipulation.
 
-*See [ASCIINEMA](https://asciinema.org/a/ktJ8678THq7luDBPz8kG32BTf) of the parser!
+*See [ASCIINEMA](https://asciinema.org/a/ktJ8678THq7luDBPz8kG32BTf) of the parser!*
 
 ## Supported sections
 

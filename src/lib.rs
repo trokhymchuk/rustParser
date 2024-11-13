@@ -6,45 +6,79 @@ use pest_derive::Parser;
 use std::str::FromStr;
 use thiserror::Error;
 
+/// The `ICalParser` struct is the main parser for the iCalendar format.
 #[derive(Parser)]
 #[grammar = "./grammar.pest"]
 
 pub struct ICalParser;
 
+/// Enum representing errors during PARSING of the iCal fiel.
 #[derive(Error, Debug)]
 pub enum ICalendarParsingError {
     #[error("Eror parsing iCal file: {0}")]
     ParsingTimeError(String),
 }
 
+/// Struct representing an iCalendar file.
 #[derive(Debug, PartialEq)]
 pub struct ICalendar {
+    /// The version of the iCalendar format used.
     pub version: Option<f64>,
+    /// The product ID identifying the software that created the iCalendar file.
     pub prodid: Option<String>,
+    /// A list of events contained in the iCalendar file.
     pub events: Vec<Event>,
+    /// A list of comments found in the iCalendar file.
+    pub comments: Vec<String>,
 }
 
+/// Struct representing a single event in the iCalendar file.
 #[derive(Debug, PartialEq)]
 pub struct Event {
+    /// Unique identifier for the event.
     pub uid: Option<String>,
+    /// Organizer of the event.
     pub organizer: Option<String>,
+    /// The start date and time of the event.
     pub dtstart: Option<String>,
+    /// The end date and time of the event.
     pub dtend: Option<String>,
+    /// The summary or title of the event.
     pub summary: Option<String>,
+    /// The geographical location of the event.
     pub geo: Option<(f64, f64)>,
+    /// A detailed description of the event.
     pub description: Option<String>,
+    /// A list of comments associated with the event.
+    pub comments: Vec<String>,
 }
 
+/// Trait to allow pretty printing to the *stdout* (pls note that stdout is only supported output).
 pub trait PrettyPrint {
+    /// Prints the iCalendar or event in a human-readable format with optional colorization.
+    ///
+    /// # Arguments
+    ///
+    /// * `colored` - A boolean flag to enable or disable colorized output. If `None`, colorization is enabled by default.
     fn pretty_print(&self, colored: Option<bool>);
 }
 
 impl ICalendar {
+    /// Parses an iCalendar string and returns an `ICalendar` struct.
+    ///
+    /// # Arguments
+    ///
+    /// * `ical_text` - A string containing the texual representation of the iCalendar.
+    ///
+    /// # Returns
+    ///
+    /// * A result containing either the parsed `ICalendar` object or an `ICalendarParsingError`.
     pub fn parse(ical_text: &str) -> Result<Self, ICalendarParsingError> {
         let mut calendar = ICalendar {
             version: None,
             prodid: None,
             events: Vec::new(),
+            comments: Vec::new(),
         };
 
         let pairs_unfolded = ICalParser::parse(Rule::vc_calendar, ical_text);
@@ -60,6 +94,14 @@ impl ICalendar {
             for inner_token in inner {
                 log::debug!("Got pair type: {:?}", inner_token.as_rule());
                 match inner_token.as_rule() {
+                    Rule::comment => {
+                        let comment_str = inner_token
+                            .as_str()
+                            .trim_start_matches(';')
+                            .trim()
+                            .to_string();
+                        calendar.comments.push(comment_str);
+                    }
                     Rule::version => {
                         let version_str = inner_token.as_str().trim_start_matches("VERSION:");
                         calendar.version = Some(version_str.parse().unwrap());
@@ -105,7 +147,13 @@ impl PrettyPrint for ICalendar {
                 println!("Product ID: {}", prodid);
             }
         }
-
+        for comment in &self.comments {
+            if colored {
+                println!("{}", format!("Comment: {}", comment).yellow());
+            } else {
+                println!("Comment: {}", comment);
+            }
+        }
         for event in self.events.iter() {
             event.pretty_print(Some(colored));
         }
@@ -113,6 +161,15 @@ impl PrettyPrint for ICalendar {
 }
 
 impl Event {
+    /// Parses a single event from the iCalendar data.
+    ///
+    /// # Arguments
+    ///
+    /// * `pair` - The pairs from the parsing of the iCalendar text file.
+    ///
+    /// # Returns
+    ///
+    /// * The parsed `Event` struct containing the event data.
     fn parse(pair: pest::iterators::Pair<Rule>) -> Self {
         let mut event = Event {
             uid: None,
@@ -122,10 +179,19 @@ impl Event {
             summary: None,
             geo: None,
             description: None,
+            comments: Vec::new(),
         };
 
         for inner_pair in pair.into_inner() {
             match inner_pair.as_rule() {
+                Rule::comment => {
+                    let comment_str = inner_pair
+                        .as_str()
+                        .trim_start_matches(';')
+                        .trim()
+                        .to_string();
+                    event.comments.push(comment_str); // Store the comment in the event
+                }
                 Rule::uid => {
                     event.uid = Some(inner_pair.as_str().trim_start_matches("UID:").to_string());
                 }
@@ -178,6 +244,7 @@ impl Event {
                             .to_string(),
                     );
                 }
+
                 _ => {}
             }
         }
@@ -246,6 +313,13 @@ impl PrettyPrint for Event {
                 println!("  {}: {}", "Description".green(), description);
             } else {
                 println!("  Description: {}", description);
+            }
+        }
+        for comment in &self.comments {
+            if colored {
+                println!("{}", format!("  Comment: {}", comment).yellow());
+            } else {
+                println!("  Comment: {}", comment);
             }
         }
     }

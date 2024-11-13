@@ -11,6 +11,7 @@ fn test_single_event_valid() {
         calendar.prodid,
         Some("-//hacksw/handcal//NONSGML v1.0//EN".to_string())
     );
+    assert_eq!(calendar.comments, vec!["test comment"]);
     assert_eq!(calendar.events.len(), 1);
     let event = &calendar.events[0];
     assert_eq!(event.uid, Some("uid1@example.com".to_string()));
@@ -22,6 +23,7 @@ fn test_single_event_valid() {
     assert_eq!(event.dtend, Some("19970715T040000Z".to_string()));
     assert_eq!(event.summary, Some("Bastille Day Party".to_string()));
     assert_eq!(event.geo, Some((48.85299, 2.36885)));
+    assert_eq!(event.comments, Vec::<String>::new());
 }
 
 #[test]
@@ -42,6 +44,7 @@ fn test_multiple_events_valid() {
                 summary: Some("Daily call".to_string()),
                 geo: Some((50.4644775692252, 30.519371783529664)),
                 description: Some("Daily call on work".to_string()),
+                comments: Vec::new(),
             },
             Event {
                 uid: Some("a.trokymcnuk@gmail.com".to_string()),
@@ -51,6 +54,7 @@ fn test_multiple_events_valid() {
                 summary: Some("Design Review - Website Redesign".to_string()),
                 geo: Some((50.4644775692252, 30.519371783529664)),
                 description: Some("Design review for the SmartUKMA website.".to_string()),
+                comments: Vec::new(),
             },
             Event {
                 uid: Some("a.trokymcnuk@gmail.com".to_string()),
@@ -60,6 +64,7 @@ fn test_multiple_events_valid() {
                 summary: Some("SmartUKMA Sync Call".to_string()),
                 geo: Some((50.4644775692252, 30.519371783529664)),
                 description: Some("Weekly sync call for the SmartUKMA project to discuss updates, blockers, and next steps.".to_string()),
+                comments: Vec::new(),
             },
             Event {
                 uid: Some("a.trokymcnuk@gmail.com".to_string()),
@@ -69,6 +74,7 @@ fn test_multiple_events_valid() {
                 summary: Some("sfsdfsdfsdfsf".to_string()),
                 geo: Some((50.4644775692252, 30.519371783529664)),
                 description: Some("sdfdfsfsdfsdf".to_string()),
+                comments: Vec::new(),
             },
             Event {
                 uid: Some("a.trokymcnuk@gmail.com".to_string()),
@@ -78,6 +84,7 @@ fn test_multiple_events_valid() {
                 summary: Some("I AM CEO Board Meeting - Q4 Review".to_string()),
                 geo: Some((50.4644775692252, 30.519371783529664)),
                 description: Some("Discues how cool I am as CEO.".to_string()),
+                comments: Vec::new(),
             },
         ];
     assert_eq!(calendar.version, Some(2.0));

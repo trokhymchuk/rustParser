@@ -3,7 +3,7 @@
 /// This rule matches the "BEGIN:VCALENDAR" and "END:VCALENDAR" markers, optionally matches the
 /// "METHOD" field, and includes the version, prodid, and a sequence of events.
 vc_calendar = { 
-    "BEGIN:VCALENDAR" ~ method? ~ ((version  ~ prodid) | (prodid ~ version)) ~ event* ~ "END:VCALENDAR" 
+    comment* ~  "BEGIN:VCALENDAR" ~ method? ~ ((version  ~ prodid) | (prodid ~ version)) ~ event* ~ "END:VCALENDAR" ~ comment*
 }
 
 /// Matches the "VERSION" field in the iCalendar format.
@@ -21,7 +21,7 @@ prodid = { "PRODID:" ~ line }
 /// An event is wrapped with "BEGIN:VEVENT" and "END:VEVENT" markers and includes a UID, organizer,
 /// start and end datetime, summary, geographical location, and optionally a description.
 event = { 
-    "BEGIN:VEVENT" ~ uid ~ organizer ~ dtstart ~ dtend ~ summary ~ geo ~ dsc? ~ "END:VEVENT" 
+    comment* ~ "BEGIN:VEVENT" ~ uid ~ organizer ~ dtstart ~ dtend ~ summary ~ geo ~ dsc? ~ "END:VEVENT" ~ comment*
 }
 
 /// Matches the "UID" field in an event.
@@ -115,7 +115,7 @@ letter_or_digit = @{ 'a'..'z' | 'A'..'Z' | '0'..'9' }
 /// Matches a comment, which starts with a semicolon and continues until the end of the line.
 ///
 /// This rule allows for inline comments in the calendar file.
-comment =  { ";" ~ (ANY ~ "\n")* }
+comment =  { ";" ~ line }
 
 /// Matches any whitespace character, including spaces, tabs, newlines, and comments.
 ///

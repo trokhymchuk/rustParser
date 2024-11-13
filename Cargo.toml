@@ -1,8 +1,8 @@
 [package]
 name = "iCalendar_parser"
-version = "0.1.4"
+version = "0.1.5"
 edition = "2021"
-description = "iCalendar file parser"
+description = "iCalendar (.ical) file parsing and putting into handy structure"
 repository = "https://github.com/trokhymchuk/rustParser"
 readme = "README.md"
 exclude = [

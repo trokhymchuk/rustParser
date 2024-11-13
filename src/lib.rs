@@ -1,8 +1,10 @@
 #![allow(non_snake_case)]
 
+use chrono::{NaiveDate};
 use colored::*;
 use pest::Parser;
 use pest_derive::Parser;
+use std::collections::HashMap;
 use std::str::FromStr;
 use thiserror::Error;
 
@@ -120,6 +122,37 @@ impl ICalendar {
             }
         }
         Ok(calendar)
+    }
+
+    pub fn print_most_busy_day(&self, colored: Option<bool>) {
+        let mut date_count: HashMap<String, usize> = HashMap::new();
+
+        for event in &self.events {
+            if let Some(dtstart) = &event.dtstart {
+                if let Ok(date) = parse_event_date(dtstart) {
+                    *date_count.entry(date).or_insert(0) += 1;
+                }
+            }
+        }
+
+        let colored = colored.unwrap_or(true);
+        if let Some((busy_date, event_count)) = date_count.iter().max_by_key(|&(_, count)| count) {
+            if colored {
+                println!(
+                    "{}: {} - {} event(s)",
+                    "Most Busy Day".bold().underline().cyan(),
+                    busy_date,
+                    event_count
+                );
+            } else {
+                println!(
+                    "{}: {} - {} event(s)",
+                    "Most Busy Day", busy_date, event_count
+                );
+            }
+        } else {
+            println!("No events found to determine the busiest day.");
+        }
     }
 }
 
@@ -323,4 +356,19 @@ impl PrettyPrint for Event {
             }
         }
     }
+}
+
+fn parse_event_date(dtstart: &str) -> Result<String, String> {
+    // The iCalendar date format is YYYYMMDDTHHMMSSZ, so we want to extract just the date portion (YYYYMMDD)
+    let date_part = dtstart
+        .split('T')
+        .next()
+        .ok_or_else(|| "Invalid date format".to_string())?;
+
+    // Try to parse the date portion into a NaiveDate
+    let naive_date = NaiveDate::parse_from_str(date_part, "%Y%m%d")
+        .map_err(|e| format!("Error parsing date: {}", e))?;
+
+    // Return the date in YYYY-MM-DD format
+    Ok(naive_date.format("%Y-%m-%d").to_string())
 }

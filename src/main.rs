@@ -9,6 +9,13 @@ fn main() -> anyhow::Result<()> {
         .version("0.1.4")
         .author("Artem Trokhymchuk")
         .about("Parse and display iCalendar files")
+        .long_about(
+            "iCal Parser is a command-line tool designed to parse iCalendar files (.iCal) and display the events contained in them. \n\n
+Usage Examples:\n
+1. Parse an iCalendar file and display events with colored output (default behavior):\n
+   $ iCal-parser -f tests/iCals/1.ical\n
+2. Parse an iCalendar file and display events without color:\n
+   $ iCal-parser -f tests/iCals/1.ical --no-color true\n")
         .arg(
             Arg::new("file")
                 .short('f')
@@ -37,5 +44,6 @@ fn main() -> anyhow::Result<()> {
     let colored = !matches.contains_id("no-color");
 
     calendar.pretty_print(Some(colored));
+    calendar.print_most_busy_day(Some(colored));
     Ok(())
 }

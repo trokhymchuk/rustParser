@@ -1,7 +1,7 @@
 # iCalendar_parser
 
 * Crates: https://crates.io/crates/iCalendar_parser
-* Docs: https://docs.rs/iCalendar_parser/latest/iCalendar_parser/all.html
+* Docs: https://docs.rs/iCalendar_parser/latest/iCalendar_parser/
 
 The iCalendar file contains event with useful information such as begin/end date, invitee, summary and so on.
 

@@ -1,4 +1,5 @@
 #![allow(non_snake_case)]
+#![doc = include_str!("../docs.md")] 
 
 use chrono::{NaiveDate};
 use colored::*;
